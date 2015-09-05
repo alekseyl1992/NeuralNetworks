@@ -29,11 +29,11 @@ public:
             for (auto &pair : trainingSet) {
                 activate(pair.first);
 
-                size_t lastLId = layers.size() - 1;
+                int lastLId = layers.size() - 1;
                 auto &deltas = layers[lastLId].getDeltas(pair.second);
 
-                for (size_t lId = lastLId - 1; lId > 0; --lId) {
-                    deltas = layers[lId].train(pair.second, layers[lId + 1], speed, smoothing);
+                for (int lId = lastLId - 1; lId >= 0; --lId) {
+                    deltas = layers[lId].train(deltas, layers[lId + 1], speed, smoothing);
                 }
             }
         }

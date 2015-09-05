@@ -2,7 +2,7 @@
 #include "MLP.h"
 
 int main() {
-    MLP mlp({ 2, 3, 1 });
+    MLP mlp({ 2, 3, 3, 1 });
     TrainingSet trainingSet = 
     {
         { { 1, 0 }, { 1 } },
