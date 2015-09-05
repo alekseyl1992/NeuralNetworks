@@ -37,7 +37,7 @@ public:
                 }
 
                 layers[0].updateWeights(pair.first, speed, smoothing);
-                for (int lId = 1; i <= lastLId; ++i) {
+                for (int lId = 1; lId <= lastLId; ++lId) {
                     layers[lId].updateWeights(layers[lId - 1], speed, smoothing);
                 }
             }
