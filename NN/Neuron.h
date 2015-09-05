@@ -12,12 +12,13 @@ private:
 
     std::vector<Synaps> synapses;
     double output = 0;
+    double delta = 0;
 
 public:
     Neuron(size_t inputsCount, std::function<double()> &doubleSupplier) {
         synapses.resize(inputsCount + 1);  // +bias
         for (Synaps &s : synapses) {
-            s.w = doubleSupplier();
+            s.w = doubleSupplier() / 10;
             s.dw = 0;
         }
     }

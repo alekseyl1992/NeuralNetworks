@@ -2,16 +2,16 @@
 #include "MLP.h"
 
 int main() {
-    MLP mlp({ 2, 3, 3, 1 });
+    MLP mlp({ 2, 3, 1 });
     TrainingSet trainingSet = 
     {
-        { { 1, 0 }, { 1 } },
-        { { 0, 1 }, { 1 } },
-        { { 1, 1 }, { 0 } },
-        { { 0, 0 }, { 0 } }
+        { { 1, -1 }, { 1 } },
+        { { -1, 1 }, { 1 } },
+        { { 1, 1 }, { 1 } },
+        { { -1, -1 }, { -1 } }
     };
 
-    mlp.train(trainingSet, 100, 0.002, 0.1);
+    mlp.train(trainingSet, 1000, 0.2, 0.1);
 
     for (auto &pair : trainingSet) {
         auto result = mlp.activate(pair.first);

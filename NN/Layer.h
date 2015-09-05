@@ -25,23 +25,18 @@ public:
         return result;
     }
 
-    arr getDeltas(arr expectedValues) {
-        arr deltas;
+    void trainLast(arr expectedValues) {
         for (size_t i = 0; i < neurons.size(); ++i) {
             Neuron &neuron = neurons[i];
 
             double expected = expectedValues[i];
             double actual = neuron.getOutput();
 
-            double delta = -actual * (1 - actual) * (expected - actual);
-            deltas.push_back(delta);
+            neuron.delta = -actual * (1 - actual) * (expected - actual);
         }
-
-        return deltas;
     }
 
-    arr train(arr nextDeltas, Layer &nextLayer, double speed, double smoothing) {
-        arr deltas;
+    void train(Layer &nextLayer) {
         for (size_t i = 0; i < neurons.size(); ++i) {
             Neuron &neuron = neurons[i];
 
@@ -52,23 +47,37 @@ public:
                 Neuron &nextNeuron = nextLayer.neurons[j];
 
                 Neuron::Synaps &s = nextNeuron.synapses[i];
-                sum += s.w * nextDeltas[j];
+                sum += s.w * nextNeuron.delta;
             }
 
-            double delta = actual * (1 - actual) * sum;
+            neuron.delta = actual * (1 - actual) * sum;
+        }
+    }
 
-            // change weights
-            for (size_t j = 0; j < nextLayer.neurons.size(); ++j) {
-                Neuron &nextNeuron = nextLayer.neurons[j];
+    void updateWeights(arr inputs, double speed, double smoothing) {
+        inputs.push_back(1);
 
-                Neuron::Synaps &s = nextNeuron.synapses[i];
-                s.dw = smoothing * s.dw + (1 - smoothing) * speed * nextDeltas[j] * actual;
+        for (Neuron &neuron: neurons) {
+            for (int i = 0; i < neuron.synapses.size(); ++i) {
+                Neuron::Synaps &s = neuron.synapses[i];
+                s.dw = smoothing * s.dw + (1 - smoothing) * speed * neuron.delta * inputs[i];
                 s.w += s.dw;
             }
-
-            deltas.push_back(delta);
         }
+    }
 
-        return deltas;
+    void updateWeights(Layer &inputs, double speed, double smoothing) {
+        for (Neuron &neuron : neurons) {
+            for (int i = 0; i < neuron.synapses.size(); ++i) {
+                Neuron::Synaps &s = neuron.synapses[i];
+
+                double value = 1;  // bias
+                if (i < inputs.neurons.size())
+                    value = inputs.neurons[i].output;
+
+                s.dw = smoothing * s.dw + (1 - smoothing) * speed * neuron.delta * value;
+                s.w += s.dw;
+            }
+        }
     }
 };

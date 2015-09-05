@@ -30,10 +30,15 @@ public:
                 activate(pair.first);
 
                 int lastLId = layers.size() - 1;
-                auto &deltas = layers[lastLId].getDeltas(pair.second);
+                layers[lastLId].trainLast(pair.second);
 
                 for (int lId = lastLId - 1; lId >= 0; --lId) {
-                    deltas = layers[lId].train(deltas, layers[lId + 1], speed, smoothing);
+                    layers[lId].train(layers[lId + 1]);
+                }
+
+                layers[0].updateWeights(pair.first, speed, smoothing);
+                for (int lId = 1; i <= lastLId; ++i) {
+                    layers[lId].updateWeights(layers[lId - 1], speed, smoothing);
                 }
             }
         }
