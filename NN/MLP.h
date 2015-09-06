@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <random>
+#include <iostream>
 #include "Layer.h"
 
 using TrainingSet = std::vector<std::pair<arr, arr>>;
@@ -10,9 +11,9 @@ private:
     std::vector<Layer> layers;
 
 public:
-    MLP(std::vector<double> layerSizes) {
+    MLP(std::vector<double> layerSizes, bool bias) {
         for (size_t i = 1; i < layerSizes.size(); ++i) {
-            layers.emplace_back(Layer(layerSizes[i], layerSizes[i - 1], doubleRand));
+            layers.emplace_back(Layer(layerSizes[i], layerSizes[i - 1], doubleRand, bias));
         }
     }
 
@@ -37,9 +38,12 @@ public:
                 }
 
                 layers[0].updateWeights(pair.first, speed, smoothing);
+                std::cout << std::endl;
                 for (int lId = 1; lId <= lastLId; ++lId) {
                     layers[lId].updateWeights(layers[lId - 1], speed, smoothing);
+                    std::cout << std::endl;
                 }
+                std::cout << std::endl;
             }
         }
     }

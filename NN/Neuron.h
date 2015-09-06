@@ -16,7 +16,7 @@ private:
 
 public:
     Neuron(size_t inputsCount, std::function<double()> &doubleSupplier) {
-        synapses.resize(inputsCount + 1);  // +bias
+        synapses.resize(inputsCount);
         for (Synaps &s : synapses) {
             s.w = doubleSupplier();
             s.dw = 0;
