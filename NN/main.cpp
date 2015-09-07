@@ -13,7 +13,8 @@ void xorTask() {
         { { 1, 1 },{ 0 } }
     };
 
-    mlp.train(trainingSet, 1000, 1, 0.8);
+    size_t steps = mlp.trainUntilError(trainingSet, 0.1, 10, 0.2);
+    std::cout << "Steps: " << steps << std::endl;
 
     for (auto &pair : trainingSet) {
         auto result = mlp.activate(pair.first);
@@ -55,7 +56,7 @@ void lectionTask() {
         1, 0, 1 },{ 0 } }
     };
 
-    mlp.train(trainingSet, 1000, 1, 0.8);
+    mlp.trainUntilSteps(trainingSet, 1000, 1, 0.8);
 
     for (auto &pair : trainingSet) {
         auto result = mlp.activate(pair.first);
@@ -64,7 +65,7 @@ void lectionTask() {
 }
 
 int main() {
-    //xorTask();
-    lectionTask();
+    xorTask();
+    //lectionTask();
     std::cin.get();
 }

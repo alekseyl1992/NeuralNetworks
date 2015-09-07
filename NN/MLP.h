@@ -4,7 +4,8 @@
 #include <iostream>
 #include "Layer.h"
 
-using TrainingSet = std::vector<std::pair<arr, arr>>;
+using TrainPair = std::pair<arr, arr>;
+using TrainingSet = std::vector<TrainPair>;
 
 class MLP {
 private:
@@ -25,27 +26,56 @@ public:
         return inputs;
     }
 
-    void train(TrainingSet trainingSet, size_t maxSteps, double speed, double smoothing) {
+    void trainUntilSteps(const TrainingSet &trainingSet, size_t maxSteps, double speed, double smoothing) {
         for (size_t i = 0; i < maxSteps; ++i) {
-            for (auto &pair : trainingSet) {
+            for (const TrainPair &pair : trainingSet) {
                 activate(pair.first);
-
-                int lastLId = layers.size() - 1;
-                layers[lastLId].trainLast(pair.second);
-
-                for (int lId = lastLId - 1; lId >= 0; --lId) {
-                    layers[lId].train(layers[lId + 1]);
-                }
-
-                layers[0].updateWeights(pair.first, speed, smoothing);
-                std::cout << std::endl;
-                for (int lId = 1; lId <= lastLId; ++lId) {
-                    layers[lId].updateWeights(layers[lId - 1], speed, smoothing);
-                    std::cout << std::endl;
-                }
-                std::cout << std::endl;
+                trainIteration(pair, speed, smoothing);
             }
         }
+    }
+
+    size_t trainUntilError(const TrainingSet &trainingSet, double maxError, double speed, double smoothing) {
+        double error = 0;
+        size_t steps = 0;
+
+        do {
+            error = 0;
+
+            for (auto &pair : trainingSet) {
+                const arr &output = activate(pair.first);
+                error += getError(pair.second, output);
+
+                trainIteration(pair, speed, smoothing);
+            }
+            ++steps;
+        } while (error / trainingSet.size() > maxError);
+
+        return steps;
+    }
+
+    void trainIteration(const TrainPair &pair, double speed, double smoothing) {
+        int lastLId = layers.size() - 1;
+        layers[lastLId].trainLast(pair.second);
+
+        for (int lId = lastLId - 1; lId >= 0; --lId) {
+            layers[lId].train(layers[lId + 1]);
+        }
+
+        layers[0].updateWeights(pair.first, speed, smoothing);
+
+        for (int lId = 1; lId <= lastLId; ++lId) {
+            layers[lId].updateWeights(layers[lId - 1], speed, smoothing);
+        }
+    }
+
+    double getError(const arr &expected, const arr &actual) {
+        double sum = 0;
+        for (size_t i = 0; i < expected.size(); ++i) {
+            sum += (expected[i] - actual[i]) * (expected[i] - actual[i]);
+        }
+
+        return sum;
     }
 
     static double doubleRand() {
