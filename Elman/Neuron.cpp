@@ -1,0 +1,26 @@
+#include "Neuron.h"
+#include "Net.h"
+
+Neuron::Neuron(int id)
+    : id(id) {
+
+}
+
+void Neuron::addEdge(Edge *edge) {
+    in.push_back(edge);
+}
+
+
+double Neuron::activate() {
+    double sum = 0;
+    for (int i = 0; i < in.size(); ++i) {
+        sum += in[i]->w * in[i]->from->value;
+    }
+
+    value = sigmoid(sum);
+    return value;
+}
+
+double Neuron::sigmoid(double x) {
+    return 1.0 / (1 + std::exp(-x));
+}

@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NN", "NN\NN.vcxproj", "{CF631093-67F2-41B8-9BB6-CBCF459CD45E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Elman", "Elman\Elman.vcxproj", "{286EABF0-0456-44E5-AF4A-C942A8DEBCEC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{CF631093-67F2-41B8-9BB6-CBCF459CD45E}.Release|x64.Build.0 = Release|x64
 		{CF631093-67F2-41B8-9BB6-CBCF459CD45E}.Release|x86.ActiveCfg = Release|Win32
 		{CF631093-67F2-41B8-9BB6-CBCF459CD45E}.Release|x86.Build.0 = Release|Win32
+		{286EABF0-0456-44E5-AF4A-C942A8DEBCEC}.Debug|x64.ActiveCfg = Debug|x64
+		{286EABF0-0456-44E5-AF4A-C942A8DEBCEC}.Debug|x64.Build.0 = Debug|x64
+		{286EABF0-0456-44E5-AF4A-C942A8DEBCEC}.Debug|x86.ActiveCfg = Debug|Win32
+		{286EABF0-0456-44E5-AF4A-C942A8DEBCEC}.Debug|x86.Build.0 = Debug|Win32
+		{286EABF0-0456-44E5-AF4A-C942A8DEBCEC}.Release|x64.ActiveCfg = Release|x64
+		{286EABF0-0456-44E5-AF4A-C942A8DEBCEC}.Release|x64.Build.0 = Release|x64
+		{286EABF0-0456-44E5-AF4A-C942A8DEBCEC}.Release|x86.ActiveCfg = Release|Win32
+		{286EABF0-0456-44E5-AF4A-C942A8DEBCEC}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
