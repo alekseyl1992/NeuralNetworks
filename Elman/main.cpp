@@ -18,12 +18,12 @@ using Population = vector<Chromosome>;
 
 
 double calcError(Net *net, vector<double> data, double expectedResult) {
-    double result = 0;
     for (double value : data) {
-        result = net->activate({ value });
+        net->activate({ value });
     }
 
-    double e =  std::abs(result - expectedResult);
+    double result = net->output->getValue();
+    double e = std::abs(result - expectedResult);
 
     return e;
 }

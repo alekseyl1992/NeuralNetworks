@@ -1,8 +1,8 @@
 #include "Neuron.h"
 #include "Net.h"
 
-Neuron::Neuron(int id)
-    : id(id) {
+Neuron::Neuron(int id, bool isInput)
+    : id(id), isInput(isInput) {
 
 }
 
@@ -18,6 +18,10 @@ double Neuron::activate() {
     }
 
     value = sigmoid(sum);
+    return value;
+}
+
+double Neuron::getValue() {
     return value;
 }
 
