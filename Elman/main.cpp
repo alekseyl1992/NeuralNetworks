@@ -16,9 +16,14 @@ struct Chromosome {
 
 using Population = vector<Chromosome>;
 
+struct Sample {
+    vector<double> stream;
+    double result;
+};
 
-double calcError(Net *net, vector<double> data, double expectedResult) {
-    for (double value : data) {
+
+double calcError(Net *net, vector<double> stream, double expectedResult) {
+    for (double value : stream) {
         net->activate({ value });
     }
 
@@ -28,16 +33,11 @@ double calcError(Net *net, vector<double> data, double expectedResult) {
     return e;
 }
 
-struct Sample {
-    vector<double> stream;
-    double result;
-};
-
 void calcFitness(Chromosome &ch, const vector<Sample> &trainSet) {
     double f = 0;
     for (const Sample &sample : trainSet) {
-        f += calcError(ch.net, sample.stream, sample.result);
         ch.net->reset();
+        f += calcError(ch.net, sample.stream, sample.result);
     }
 
     ch.fitness = f / trainSet.size();
@@ -49,8 +49,7 @@ Net *crossover(Net *a, Net *b) {
     for (int i = 0; i < result->edges.size(); ++i) {
         Edge *edge = result->edges[i];
         
-        edge->w = rand() % 2 ?
-            a->edges[i]->w : b->edges[i]->w;
+        edge->w = (rand() % 2) ? a->edges[i]->w : b->edges[i]->w;
     }
 
     return result;
@@ -60,19 +59,19 @@ void mutate(Net *net) {
     for (int i = 0; i < net->edges.size(); ++i) {
         Edge *edge = net->edges[i];
 
-        edge->w = Net::getRandomWeight();
+        edge->w = Net::getRandomWeight(edge->w);
     }
 }
 
 int main() {
     // prepare data
     vector<Sample> trainSet = {
-        Sample{ { 0, 1, 1, 0 }, 1 },
-        Sample{ { 0, 1, 1, 0 }, 1 },
-        Sample{ { 0, 1, 0, 0 }, 0 },
-        Sample{ { 0, 0, 0, 0 }, 0 },
-        Sample{ { 0, 1, 1, 1 }, 1 },
-        Sample{ { 1, 1, 1, 1 }, 1 },
+        Sample{ { -1,  1,  1, -1 },  1 },
+        Sample{ { -1,  1,  1, -1 },  1 },
+        Sample{ { -1,  1, -1, -1 }, -1 },
+        Sample{ { -1, -1, -1, -1 }, -1 },
+        Sample{ { -1,  1,  1,  1 },  1 },
+        Sample{ {  1,  1,  1,  1 },  1 },
     };
 
     Population population;
@@ -82,8 +81,9 @@ int main() {
     }
 
     // train
-    double targetFitness = 0.1;
+    double targetFitness = 0.35;
     double mutationProb = 0.1;
+    long iterationCount = 0;
 
     while (true) {
         for (Chromosome &ch : population) {
@@ -94,31 +94,50 @@ int main() {
             return ch1.fitness < ch2.fitness;
         });
 
+        std::cout << population[0].fitness << std::endl;
         if (population[0].fitness <= targetFitness)
             break;
 
+
         // crossover
         for (int i = 0; i < population.size() / 2; ++i) {
-            Net *a = population[rand() % (population.size() / 2)].net;
-            Net *b = population[rand() % (population.size() / 2)].net;
-            Net *result = crossover(a, b);
+            // selection
+            net *a = population[rand() % (population.size())].net;
+            net *b = population[rand() % (population.size()) / 2].net;
+            net *result = crossover(a, b);
 
-            if (rand() % 100 < mutationProb * 100)
+            // mutation
+            if (rand() % 100 < mutationprob * 100)
                 mutate(result);
 
-            int pos = population.size() - rand() % (population.size() / 2) - 1;
-            population[pos] = Chromosome(result);
+            // reduction
+            int pos = rand() % population.size();
+            population[pos] = chromosome(result);
         }
+
+
+        ++iterationCount;
     }
 
-    // output
+    // finished learning
+    std::cout << "Finished with: " << iterationCount << " iterations" << std::endl;
+
+    // output recognition results
     Net *net = population[0].net;
     for (const Sample &sample : trainSet) {
+        net->reset();
+
         for (double v : sample.stream) {
             net->activate({ v });
         }
 
-        std::cout << (net->output > 0) << std::endl;
+        double result = net->output->getValue();
+        if (std::abs(result - 1) < std::abs(result + 1))
+            std::cout << 1;
+        else
+            std::cout << -1;
+
+        std::cout << ": " << result << std::endl;
     }
 
     std::cin.get();

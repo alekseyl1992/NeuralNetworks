@@ -2,10 +2,10 @@
 
 class Neuron;
 struct Edge {
-    double w;
-    int id;
-    Neuron *from;
-    Neuron *to;
+    double w = 0;
+    int id = 0;
+    Neuron *from = nullptr;
+    Neuron *to = nullptr;
 
     Edge(Neuron *from, Neuron *to, int id);
 

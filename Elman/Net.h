@@ -18,5 +18,6 @@ struct Net {
     double activate(const vector<double> &value);
     void reset();
 
+    static double getRandomWeight(double oldWeight);
     static double getRandomWeight();
 };

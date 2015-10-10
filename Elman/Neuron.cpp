@@ -26,5 +26,6 @@ double Neuron::getValue() {
 }
 
 double Neuron::sigmoid(double x) {
-    return 1.0 / (1 + std::exp(-x));
+    //return x;
+    return 2.0 / (1 + std::exp(-x * 5)) - 1;
 }

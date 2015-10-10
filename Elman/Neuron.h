@@ -6,10 +6,9 @@ class Net;
 class Edge;
 
 class Neuron {
-    Net *net;
-    int id;
-    bool isInput;
-    double value;
+    int id = 0;
+    bool isInput = false;
+    double value = 0;
 
     vector<Edge*> in;
 
