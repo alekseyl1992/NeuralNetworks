@@ -15,16 +15,17 @@ struct Chromosome {
 };
 
 using Population = vector<Chromosome>;
+using Input = vector<double>;
 
 struct Sample {
-    vector<double> stream;
+    vector<Input> stream;
     double result;
 };
 
 
-double calcError(Net *net, vector<double> stream, double expectedResult) {
-    for (double value : stream) {
-        net->activate({ value });
+double calcError(Net *net, vector<Input> stream, double expectedResult) {
+    for (const Input &value : stream) {
+        net->activate(value);
     }
 
     double result = net->output->getValue();
@@ -46,10 +47,22 @@ void calcFitness(Chromosome &ch, const vector<Sample> &trainSet) {
 Net *crossover(Net *a, Net *b) {
     Net *result = new Net(*a);
 
+    Net* sources[] = { a, b };
+    Net *source = sources[rand() % 2];
+
     for (int i = 0; i < result->edges.size(); ++i) {
-        Edge *edge = result->edges[i];
-        
-        edge->w = (rand() % 2) ? a->edges[i]->w : b->edges[i]->w;
+        int segmentSize = rand() % result->edges.size() / 10;
+
+        for (int j = 0; j < segmentSize; ++j) {
+            if (i + j >= result->edges.size())
+                break;
+
+            Edge *edge = result->edges[i + j];
+            edge->w = source->edges[i + j]->w;
+        }
+
+        i += segmentSize;
+        source = sources[rand() % 2];
     }
 
     return result;
@@ -66,12 +79,52 @@ void mutate(Net *net) {
 int main() {
     // prepare data
     vector<Sample> trainSet = {
-        Sample{ { -1,  1,  1, -1 },  1 },
-        Sample{ { -1,  1,  1, -1 },  1 },
-        Sample{ { -1,  1, -1, -1 }, -1 },
-        Sample{ { -1, -1, -1, -1 }, -1 },
-        Sample{ { -1,  1,  1,  1 },  1 },
-        Sample{ {  1,  1,  1,  1 },  1 },
+        Sample{
+            {
+                {
+                    -1, -1, -1,
+                     1, -1, -1,
+                    -1, -1, -1
+                },
+                {
+                    -1, -1, -1,
+                    -1,  1, -1,
+                    -1, -1, -1
+                },
+                {
+                    -1, -1, -1,
+                    -1, -1,  1,
+                    -1, -1, -1
+                },
+                {
+                    -1, -1, -1,
+                    -1, -1, -1,
+                    -1, -1, -1
+                },
+            }, 1 },
+        Sample{
+            {
+                {
+                    -1, -1, -1,
+                    -1, -1,  1,
+                    -1, -1, -1
+                },
+                {
+                    -1, -1, -1,
+                    -1,  1, -1,
+                    -1, -1, -1
+                },
+                {
+                    -1, -1, -1,
+                     1, -1, -1,
+                    -1, -1, -1
+                },
+                {
+                    -1, -1, -1,
+                    -1, -1, -1,
+                    -1, -1, -1
+                },
+            }, -1 },
     };
 
     Population population;
@@ -81,7 +134,7 @@ int main() {
     }
 
     // train
-    double targetFitness = 0.35;
+    double targetFitness = 0.1;
     double mutationProb = 0.1;
     long iterationCount = 0;
 
@@ -102,17 +155,17 @@ int main() {
         // crossover
         for (int i = 0; i < population.size() / 2; ++i) {
             // selection
-            net *a = population[rand() % (population.size())].net;
-            net *b = population[rand() % (population.size()) / 2].net;
-            net *result = crossover(a, b);
+            Net *a = population[rand() % (population.size())].net;
+            Net *b = population[rand() % (population.size()) / 2].net;
+            Net *result = crossover(a, b);
 
             // mutation
-            if (rand() % 100 < mutationprob * 100)
+            if (rand() % 100 < mutationProb * 100)
                 mutate(result);
 
             // reduction
-            int pos = rand() % population.size();
-            population[pos] = chromosome(result);
+            int pos = population.size() - i - 1;
+            population[pos] = Chromosome(result);
         }
 
 
@@ -127,8 +180,8 @@ int main() {
     for (const Sample &sample : trainSet) {
         net->reset();
 
-        for (double v : sample.stream) {
-            net->activate({ v });
+        for (const Input &v : sample.stream) {
+            net->activate(v);
         }
 
         double result = net->output->getValue();
