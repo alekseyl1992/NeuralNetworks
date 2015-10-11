@@ -139,6 +139,7 @@ int main() {
     long iterationCount = 0;
 
     while (true) {
+        std::cout << iterationCount << ") ";
         for (Chromosome &ch : population) {
             calcFitness(ch, trainSet);
         }

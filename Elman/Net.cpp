@@ -56,7 +56,7 @@ Net::Net(const Net &net) {
         copy->w = e->w;
     }
 
-    output = net.neurons[net.output->id];
+    output = neurons[net.output->id];
 }
 
 Neuron *Net::createNeuron(bool isInput) {
