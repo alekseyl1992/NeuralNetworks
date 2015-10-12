@@ -4,27 +4,27 @@
 #include "Neuron.h"
 using std::vector;
 
-Net::Net() {
+Net::Net(const Config &config) :
+    config(config) {
+
     vector<Neuron *> hidden;
-    int hiddenCount = 9;
-    for (int i = 0; i < hiddenCount; ++i) {
+    for (int i = 0; i < config.hiddenCount; ++i) {
         Neuron *h = createNeuron();
         hidden.push_back(h);
     }
         
     Neuron *o = createNeuron();
     
-    int inputsCount = 9;
-    for (int i = 0; i < inputsCount; ++i) {
+    for (int i = 0; i < config.inputsCount; ++i) {
         Neuron *n = createNeuron(true);
-        for (int j = 0; j < hiddenCount; ++j) {
+        for (int j = 0; j < config.hiddenCount; ++j) {
             createEdge(n, hidden[j]);
         }
     }
 
-    for (int i = 0; i < hiddenCount; ++i) {
+    for (int i = 0; i < config.hiddenCount; ++i) {
         createEdge(hidden[i], o);
-        for (int j = 0; j < hiddenCount; ++j) {
+        for (int j = 0; j < config.hiddenCount; ++j) {
             createEdge(hidden[i], hidden[j]);
         }
     }
@@ -32,7 +32,9 @@ Net::Net() {
     output = o;
 }
 
-Net::Net(const Net &net) {
+Net::Net(const Net &net)
+    : config(net.config) {
+
     for (Neuron *n : net.inputs) {
         Neuron *copy = createNeuron(true);
     }
@@ -57,6 +59,22 @@ Net::Net(const Net &net) {
     }
 
     output = neurons[net.output->id];
+}
+
+Net::~Net() {
+    for (auto &input: inputs)
+        delete input;
+    inputs.clear();
+
+    for (auto &neuron : neurons)
+        delete neuron;
+    neurons.clear();
+
+    for (auto &edge : edges)
+        delete edge;
+    edges.clear();
+
+    output = nullptr;
 }
 
 Neuron *Net::createNeuron(bool isInput) {
