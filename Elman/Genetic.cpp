@@ -8,7 +8,7 @@
 
 using std::vector;
 
-Genetic::Genetic(Genetic::Config gConfig, Net::Config nConfig, vector<Sample> trainSet)
+Genetic::Genetic(Genetic::Config gConfig, Net::Config nConfig, TrainSet trainSet)
     : gConfig(gConfig), nConfig(nConfig), trainSet(trainSet) {
 
 }

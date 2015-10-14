@@ -1,4 +1,5 @@
 #include "GeneticNodeWrapper.h"
+#include <thread>
 
 using v8::Function;
 using v8::FunctionCallbackInfo;
@@ -10,13 +11,25 @@ using v8::Object;
 using v8::Persistent;
 using v8::String;
 using v8::Value;
+using v8::Exception;
 
 Persistent<Function> GeneticNodeWrapper::constructor;
 
-GeneticNodeWrapper::GeneticNodeWrapper(double value) : value_(value) {
+GeneticNodeWrapper::GeneticNodeWrapper(Local<Object> gConfig, Local<Object> nConfig, Local<Object> trainSet) {
+    // TODO: parse params to structures
+    Genetic::Config _gConfig;
+
+    Net::Config _nConfig;
+
+    Genetic::TrainSet _trainSet;
+
+
+    genetic = new Genetic(_gConfig, _nConfig, _trainSet);
 }
 
 GeneticNodeWrapper::~GeneticNodeWrapper() {
+    delete genetic;
+    genetic = nullptr;
 }
 
 void GeneticNodeWrapper::Init(Local<Object> exports) {
@@ -28,7 +41,8 @@ void GeneticNodeWrapper::Init(Local<Object> exports) {
     tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
     // Prototype
-    NODE_SET_PROTOTYPE_METHOD(tpl, "plusOne", PlusOne);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "start", Start);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "recognize", Recognize);
 
     constructor.Reset(isolate, tpl->GetFunction());
     exports->Set(String::NewFromUtf8(isolate, "GeneticNodeWrapper"),
@@ -40,8 +54,17 @@ void GeneticNodeWrapper::New(const FunctionCallbackInfo<Value>& args) {
 
     if (args.IsConstructCall()) {
         // Invoked as constructor: `new GeneticNodeWrapper(...)`
-        double value = args[0]->IsUndefined() ? 0 : args[0]->NumberValue();
-        GeneticNodeWrapper* obj = new GeneticNodeWrapper(value);
+        if (args.Length() != 3) {
+            isolate->ThrowException(Exception::TypeError(
+                String::NewFromUtf8(isolate, "Wrong arguments")));
+            return;
+        }
+
+        Local<Object> gConfig = args[0].As<Object>();
+        Local<Object> nConfig = args[1].As<Object>();
+        Local<Object> trainSet = args[2].As<Object>();
+
+        GeneticNodeWrapper* obj = new GeneticNodeWrapper(gConfig, nConfig, trainSet);
         obj->Wrap(args.This());
         args.GetReturnValue().Set(args.This());
     }
@@ -54,11 +77,21 @@ void GeneticNodeWrapper::New(const FunctionCallbackInfo<Value>& args) {
     }
 }
 
-void GeneticNodeWrapper::PlusOne(const FunctionCallbackInfo<Value>& args) {
+void GeneticNodeWrapper::Start(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
+    Local<Function> cb = Local<Function>::Cast(args[0]);
 
-    GeneticNodeWrapper* obj = ObjectWrap::Unwrap<GeneticNodeWrapper>(args.Holder());
-    obj->value_ += 1;
+    std::thread th([=]() {
+        GeneticNodeWrapper* obj = ObjectWrap::Unwrap<GeneticNodeWrapper>(args.Holder());
+        long result = obj->genetic->start();
 
-    args.GetReturnValue().Set(Number::New(isolate, obj->value_));
+        const unsigned argc = 1;
+        Local<Value> argv[argc] = { Number::New(isolate, result) };
+        cb->Call(Null(isolate), argc, argv);
+    });
+}
+
+void GeneticNodeWrapper::Recognize(const FunctionCallbackInfo<Value>& args) {
+    // TODO: parse params and call
+    // genetic-recognize();
 }

@@ -2,8 +2,8 @@
 #include <vector>
 using std::vector;
 
-class Net;
-class Edge;
+struct Net;
+struct Edge;
 
 class Neuron {
     int id = 0;
@@ -22,5 +22,5 @@ public:
 
     static double sigmoid(double x);
 
-    friend class Net;
+    friend struct Net;
 };

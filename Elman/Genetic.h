@@ -44,13 +44,15 @@ public:
 
     using Population = std::vector<Chromosome>;
     using Input = std::vector<double>;
-
+    
     struct Sample {
         std::vector<Input> stream;
         double result;
     };
 
-    Genetic(Genetic::Config gConfig, Net::Config nConfig, vector<Sample> trainSet);
+    using TrainSet = std::vector<Sample>;
+
+    Genetic(Genetic::Config gConfig, Net::Config nConfig, TrainSet trainSet);
     virtual ~Genetic();
 
     double calcError(Net * net, vector<Input> stream, double expectedResult);
