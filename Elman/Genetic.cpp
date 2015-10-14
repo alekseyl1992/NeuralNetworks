@@ -107,18 +107,21 @@ long Genetic::start() {
 
             // reduction
             int pos = population.size() - i - 1;
-            population[pos] = Chromosome(result);
+            population[pos] = std::move(Chromosome(result));
         }
 
 
         ++iterationCount;
     }
 
-    // finished learning
-    std::cout << "Finished with: " << iterationCount << " iterations" << std::endl;
+    // save best network in field
+    result = std::move(population[0]);
 
-    // output recognition results
-    Net *net = population[0].net;
+    return iterationCount;
+}
+
+double Genetic::recognize(vector<Input> stream) {
+    Net *net = result.net;
     for (const Sample &sample : trainSet) {
         net->reset();
 
@@ -128,12 +131,8 @@ long Genetic::start() {
 
         double result = net->output->getValue();
         if (std::abs(result - 1) < std::abs(result + 1))
-            std::cout << 1;
+            return 1;
         else
-            std::cout << -1;
-
-        std::cout << ": " << result << std::endl;
+            return -1;
     }
-
-    return iterationCount;
 }

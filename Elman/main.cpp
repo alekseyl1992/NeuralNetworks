@@ -74,23 +74,9 @@ int main() {
     long iterationCount = genetic.start();
     std::cout << "Finished with: " << iterationCount << " iterations" << std::endl;
 
-    // output recognition results
-    /*Net *net = population[0].net;
-    for (const Sample &sample : trainSet) {
-        net->reset();
-
-        for (const Input &v : sample.stream) {
-            net->activate(v);
-        }
-
-        double result = net->output->getValue();
-        if (std::abs(result - 1) < std::abs(result + 1))
-            std::cout << 1;
-        else
-            std::cout << -1;
-
-        std::cout << ": " << result << std::endl;
-    }*/
+    // recognize
+    std::cout << genetic.recognize(trainSet[0].stream) << std::endl;
+    std::cout << genetic.recognize(trainSet[1].stream) << std::endl;
 
     std::cin.get();
 }

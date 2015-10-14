@@ -18,6 +18,7 @@
 x64/
 x86/
 build/
+Elman/node_addon/build/
 bld/
 [Bb]in/
 [Oo]bj/

@@ -18,6 +18,24 @@ public:
         Chromosome(Net *net)
             : net(net), fitness(0) { }
 
+        Chromosome(const Chromosome &ch) = delete;
+        Chromosome(Chromosome &&ch) {
+            this->net = ch.net;
+            this->fitness = ch.fitness;
+
+            ch.net = nullptr;
+        }
+
+        Chromosome &operator=(const Chromosome &ch) = delete;
+        Chromosome &operator=(Chromosome &&ch) {
+            this->net = ch.net;
+            this->fitness = ch.fitness;
+
+            ch.net = nullptr;
+
+            return *this;
+        }
+
         ~Chromosome() {
             delete net;
             net = nullptr;
@@ -39,11 +57,14 @@ public:
     void calcFitness(Chromosome & ch, const vector<Sample>& trainSet);
     Net * crossover(Net * a, Net * b);
     void mutate(Net * net);
+    
     long start();
+    double recognize(vector<Input> stream);
 
 private:
     Genetic::Config gConfig;
     Net::Config nConfig;
     vector<Sample> trainSet;
+    Chromosome result = Chromosome(nullptr);
 };
 
