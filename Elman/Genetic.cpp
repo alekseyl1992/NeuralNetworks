@@ -39,7 +39,7 @@ void Genetic::calcFitness(Chromosome &ch, const vector<Sample> &trainSet) {
 }
 
 Net *Genetic::crossover(Net *a, Net *b) {
-    Net *result = new Net(*a);
+    Net *result = new Net(nConfig);
 
     Net* sources[] = { a, b };
     Net *source = sources[rand() % 2];
@@ -114,25 +114,23 @@ long Genetic::start() {
         ++iterationCount;
     }
 
-    // save best network in field
+    // save best network in result
     result = std::move(population[0]);
 
     return iterationCount;
 }
 
 double Genetic::recognize(vector<Input> stream) {
-    Net *net = result.net;
-    for (const Sample &sample : trainSet) {
-        net->reset();
+    Net *net = result.net;    
+    net->reset();
 
-        for (const Input &v : sample.stream) {
-            net->activate(v);
-        }
-
-        double result = net->output->getValue();
-        if (std::abs(result - 1) < std::abs(result + 1))
-            return 1;
-        else
-            return -1;
+    for (const Input &v : stream) {
+        net->activate(v);
     }
+
+    double result = net->output->getValue();
+    if (std::abs(result - 1) < std::abs(result + 1))
+        return 1;
+    else
+        return -1;
 }
