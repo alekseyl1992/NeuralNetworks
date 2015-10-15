@@ -67,11 +67,13 @@ var sample2 = [
 var trainSet = [sample1, sample2];
 
 var obj = new addon.GeneticNodeWrapper(gConfig, nConfig, trainSet);
-obj.start((iterationsCount) => {
-    console.log("Finished after: " + iterationsCount);
+console.log(obj);
 
-    console.log(obj.recognize(sample1[0]));
-    console.log(obj.recognize(sample2[0]));
-});
+//obj.start((iterationsCount) => {
+//    console.log("Finished after: " + iterationsCount);
+
+//    console.log(obj.recognize(sample1[0]));
+//    console.log(obj.recognize(sample2[0]));
+//});
 
 setTimeout(() => console.log('Timed out'), 5000);

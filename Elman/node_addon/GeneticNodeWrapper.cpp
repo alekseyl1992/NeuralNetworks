@@ -1,5 +1,6 @@
 #include "GeneticNodeWrapper.h"
 #include <thread>
+#include <iostream>
 
 using v8::Function;
 using v8::FunctionCallbackInfo;
@@ -17,9 +18,7 @@ using v8::Array;
 Persistent<Function> GeneticNodeWrapper::constructor;
 
 GeneticNodeWrapper::GeneticNodeWrapper(Isolate *isolate, Local<Object> gConfig, Local<Object> nConfig, Local<Array> trainSet) {
-    // TODO: parse params to structures
     Genetic::Config _gConfig;
-    //auto ctx = gConfig.CreationContext();
 
     _gConfig.populationSize = gConfig->Get(String::NewFromUtf8(isolate, "populationSize"))->IntegerValue();
     _gConfig.mutationProb = gConfig->Get(String::NewFromUtf8(isolate, "mutationProb"))->NumberValue();
@@ -39,6 +38,7 @@ GeneticNodeWrapper::GeneticNodeWrapper(Isolate *isolate, Local<Object> gConfig, 
         Genetic::Stream _stream;
         Local<Array> stream = sample->Get(0).As<Array>();
         double _label = sample->Get(1)->NumberValue();
+        std::cout << _label << std::endl;
 
         // for each "frame"
         for (int j = 0; j < stream->Length(); ++j) {
