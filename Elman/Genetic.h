@@ -44,9 +44,10 @@ public:
 
     using Population = std::vector<Chromosome>;
     using Input = std::vector<double>;
+    using Stream = std::vector<Input>;
     
     struct Sample {
-        std::vector<Input> stream;
+        Stream stream;
         double result;
     };
 

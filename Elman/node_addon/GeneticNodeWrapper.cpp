@@ -12,16 +12,49 @@ using v8::Persistent;
 using v8::String;
 using v8::Value;
 using v8::Exception;
+using v8::Array;
 
 Persistent<Function> GeneticNodeWrapper::constructor;
 
-GeneticNodeWrapper::GeneticNodeWrapper(Local<Object> gConfig, Local<Object> nConfig, Local<Object> trainSet) {
+GeneticNodeWrapper::GeneticNodeWrapper(Isolate *isolate, Local<Object> gConfig, Local<Object> nConfig, Local<Array> trainSet) {
     // TODO: parse params to structures
     Genetic::Config _gConfig;
+    //auto ctx = gConfig.CreationContext();
+
+    _gConfig.populationSize = gConfig->Get(String::NewFromUtf8(isolate, "populationSize"))->IntegerValue();
+    _gConfig.mutationProb = gConfig->Get(String::NewFromUtf8(isolate, "mutationProb"))->NumberValue();
+    _gConfig.segmentDivider = gConfig->Get(String::NewFromUtf8(isolate, "segmentDivider"))->NumberValue();
+    _gConfig.targetFitness = gConfig->Get(String::NewFromUtf8(isolate, "targetFitness"))->NumberValue();
 
     Net::Config _nConfig;
+    _nConfig.hiddenCount = nConfig->Get(String::NewFromUtf8(isolate, "hiddenCount"))->IntegerValue();
+    _nConfig.inputsCount = nConfig->Get(String::NewFromUtf8(isolate, "inputsCount"))->IntegerValue();
 
     Genetic::TrainSet _trainSet;
+    // for each "video" pair
+    for (int i = 0; i < trainSet->Length(); ++i) {
+        Genetic::Sample _sample;
+        Local<Array> sample = trainSet->Get(i).As<Array>();
+
+        Genetic::Stream _stream;
+        Local<Array> stream = sample->Get(0).As<Array>();
+        double _label = sample->Get(1)->NumberValue();
+
+        // for each "frame"
+        for (int j = 0; j < stream->Length(); ++j) {
+            Genetic::Input _input;
+            Local<Array> input = stream->Get(j).As<Array>();
+
+            for (int k = 0; k < input->Length(); ++k) {
+                _input.push_back(input->Get(k)->NumberValue());
+            }
+
+            _stream.push_back(_input);
+        }
+
+        _sample.stream = _stream;
+        _sample.result = _label;
+    }
 
 
     genetic = new Genetic(_gConfig, _nConfig, _trainSet);
@@ -62,9 +95,9 @@ void GeneticNodeWrapper::New(const FunctionCallbackInfo<Value>& args) {
 
         Local<Object> gConfig = args[0].As<Object>();
         Local<Object> nConfig = args[1].As<Object>();
-        Local<Object> trainSet = args[2].As<Object>();
+        Local<Array> trainSet = args[2].As<Array>();
 
-        GeneticNodeWrapper* obj = new GeneticNodeWrapper(gConfig, nConfig, trainSet);
+        GeneticNodeWrapper* obj = new GeneticNodeWrapper(isolate, gConfig, nConfig, trainSet);
         obj->Wrap(args.This());
         args.GetReturnValue().Set(args.This());
     }
