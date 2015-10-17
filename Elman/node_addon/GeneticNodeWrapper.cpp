@@ -20,14 +20,14 @@ Persistent<Function> GeneticNodeWrapper::constructor;
 GeneticNodeWrapper::GeneticNodeWrapper(Isolate *isolate, Local<Object> gConfig, Local<Object> nConfig, Local<Array> trainSet) {
     Genetic::Config _gConfig;
 
-    _gConfig.populationSize = gConfig->Get(String::NewFromUtf8(isolate, "populationSize"))->IntegerValue();
-    _gConfig.mutationProb = gConfig->Get(String::NewFromUtf8(isolate, "mutationProb"))->NumberValue();
-    _gConfig.segmentDivider = gConfig->Get(String::NewFromUtf8(isolate, "segmentDivider"))->NumberValue();
-    _gConfig.targetFitness = gConfig->Get(String::NewFromUtf8(isolate, "targetFitness"))->NumberValue();
+    std::cout << (_gConfig.populationSize = gConfig->Get(String::NewFromUtf8(isolate, "populationSize"))->IntegerValue()) << std::endl;
+    std::cout << (_gConfig.mutationProb = gConfig->Get(String::NewFromUtf8(isolate, "mutationProb"))->NumberValue()) << std::endl;
+    std::cout << (_gConfig.segmentDivider = gConfig->Get(String::NewFromUtf8(isolate, "segmentDivider"))->NumberValue()) << std::endl;
+    std::cout << (_gConfig.targetFitness = gConfig->Get(String::NewFromUtf8(isolate, "targetFitness"))->NumberValue()) << std::endl;
 
     Net::Config _nConfig;
-    _nConfig.hiddenCount = nConfig->Get(String::NewFromUtf8(isolate, "hiddenCount"))->IntegerValue();
-    _nConfig.inputsCount = nConfig->Get(String::NewFromUtf8(isolate, "inputsCount"))->IntegerValue();
+    std::cout << (_nConfig.hiddenCount = nConfig->Get(String::NewFromUtf8(isolate, "hiddenCount"))->IntegerValue()) << std::endl;
+    std::cout << (_nConfig.inputsCount = nConfig->Get(String::NewFromUtf8(isolate, "inputsCount"))->IntegerValue()) << std::endl;
 
     Genetic::TrainSet _trainSet;
     // for each "video" pair
@@ -46,14 +46,19 @@ GeneticNodeWrapper::GeneticNodeWrapper(Isolate *isolate, Local<Object> gConfig, 
             Local<Array> input = stream->Get(j).As<Array>();
 
             for (int k = 0; k < input->Length(); ++k) {
-                _input.push_back(input->Get(k)->NumberValue());
+                double val = input->Get(k)->NumberValue();
+                std::cout << val << " ";
+                _input.push_back(val);
             }
+            std::cout << std::endl;
 
             _stream.push_back(_input);
         }
 
         _sample.stream = _stream;
         _sample.result = _label;
+
+        _trainSet.push_back(_sample);
     }
 
 
@@ -111,20 +116,48 @@ void GeneticNodeWrapper::New(const FunctionCallbackInfo<Value>& args) {
 }
 
 void GeneticNodeWrapper::Start(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    Local<Function> cb = Local<Function>::Cast(args[0]);
-
-    std::thread th([=]() {
+    //std::thread th([&args]() {
         GeneticNodeWrapper* obj = ObjectWrap::Unwrap<GeneticNodeWrapper>(args.Holder());
         long result = obj->genetic->start();
+        std::cout << "[C++] Training finished: " << result << std::endl << std::endl;
 
+        Isolate* isolate = args.GetIsolate();
         const unsigned argc = 1;
         Local<Value> argv[argc] = { Number::New(isolate, result) };
+        
+        Local<Function> cb = Local<Function>::Cast(args[0]);
         cb->Call(Null(isolate), argc, argv);
-    });
+    //});
 }
 
 void GeneticNodeWrapper::Recognize(const FunctionCallbackInfo<Value>& args) {
-    // TODO: parse params and call
-    // genetic-recognize();
+    Genetic::Stream _stream;
+    Local<Array> stream = args[0].As<Array>();
+
+    // for each "frame"
+    for (int j = 0; j < stream->Length(); ++j) {
+        Genetic::Input _input;
+        Local<Array> input = stream->Get(j).As<Array>();
+
+        for (int k = 0; k < input->Length(); ++k) {
+            double val = input->Get(k)->NumberValue();
+            std::cout << val << " ";
+            _input.push_back(val);
+        }
+        std::cout << std::endl;
+
+        _stream.push_back(_input);
+    }
+
+    GeneticNodeWrapper* obj = ObjectWrap::Unwrap<GeneticNodeWrapper>(args.Holder());
+    long result = obj->genetic->recognize(_stream);
+
+    args.GetReturnValue().Set(result);
+
+    //Isolate* isolate = args.GetIsolate();
+    //const unsigned argc = 1;
+    //Local<Value> argv[argc] = { Number::New(isolate, result) };
+
+    //Local<Function> cb = Local<Function>::Cast(args[0]);
+    //cb->Call(Null(isolate), argc, argv);
 }
