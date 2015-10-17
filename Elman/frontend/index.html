@@ -1,0 +1,110 @@
+<html>
+<head>
+    <title>Perceptron</title>
+
+    <link rel="stylesheet" href="dist/vendor.css">
+    <link rel="stylesheet" href="dist/app.css">
+    <script src="dist/vendor.js"></script>
+    <script src="dist/app.js"></script>
+</head>
+
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="row">
+                <div id="input-image" class="col-lg-4">
+                    <script id="input-image-template" type="text/handlebars">
+                    <table class="image-table">
+                        {{#each this}}
+                            <tr>
+                            {{#each this}}
+                            <td class="cell cell{{this}}" data-value="{{this}}">
+                            </td>
+                            {{/each}}
+                            </tr>
+                        {{/each}}
+                    </table>
+                    </script>
+                </div>
+                <div class="display col-md-8">
+                    This is: <span class="display__value">--</span>
+                    <br>
+                    <button class="btn btn-primary" id="recognize">Recognize</button>
+                </div>
+            </div>
+
+            <div>
+                <button class="add-image btn" data-value="0">0</button>
+                <button class="add-image btn" data-value="1">1</button>
+                <button class="clear btn" data-value="clear">Clear</button>
+            </div>
+            <hr>
+            <div id="training-set">
+                <script id="training-set-image-template" type="text/handlebars">
+                <div class="sample" data-label="{{label}}">
+                    <div>
+                        {{label}}
+                        <div class="pull-right remove">
+                            [x]
+                        </div>
+                    </div>
+                    <table class="image-table">
+                        {{#each image}}
+                            <tr>
+                            {{#each this}}
+                            <td class="cell cell{{this}}" data-value="{{this}}">
+                            </td>
+                            {{/each}}
+                            </tr>
+                        {{/each}}
+                    </table>
+                </div>
+                </script>
+            </div>
+        </div>
+        <div id="panel" class="col-md-4">
+            <div>
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a href="#config" aria-controls="config" role="tab" data-toggle="tab">Config</a></li>
+                    <li role="presentation"><a href="#log" aria-controls="log" role="tab" data-toggle="tab">Log</a></li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane config active" id="config">
+                        <script id="config-template" type="text/handlebars">
+                        <table class="table">
+                            {{#each config}}
+                                <tr>
+                                <td>{{@key}}:</td>
+                                <td><input type="text" value="{{this}}" data-key="{{@key}}"></td>
+                                </tr>
+                            {{/each}}
+                        </table>
+                        </script>
+                    </div>
+                    <div role="tabpanel" class="tab-pane log" id="log">
+
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-success" id="train">Train</button>
+                <button class="btn" id="apply">Apply size</button>
+                <button class="btn" id="reset">Reset weights</button>
+                <span class="pull-right">
+                    <button class="btn btn-default" id="run-tests">Tests</button>
+                </span>
+            </div>
+            <div class="author">
+                Леонтьев Алексей (alekseyl@list.ru)<br>
+                МГТУ имени Н. Э. Баумана, 2015 г.
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>
