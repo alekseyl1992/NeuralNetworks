@@ -14,6 +14,7 @@ using v8::String;
 using v8::Value;
 using v8::Exception;
 using v8::Array;
+using v8::Handle;
 
 Persistent<Function> GeneticNodeWrapper::constructor;
 
@@ -116,18 +117,39 @@ void GeneticNodeWrapper::New(const FunctionCallbackInfo<Value>& args) {
 }
 
 void GeneticNodeWrapper::Start(const FunctionCallbackInfo<Value>& args) {
-    //std::thread th([&args]() {
-        GeneticNodeWrapper* obj = ObjectWrap::Unwrap<GeneticNodeWrapper>(args.Holder());
-        long result = obj->genetic->start();
-        std::cout << "[C++] Training finished: " << result << std::endl << std::endl;
+    Isolate* isolate = args.GetIsolate();
 
-        Isolate* isolate = args.GetIsolate();
-        const unsigned argc = 1;
-        Local<Value> argv[argc] = { Number::New(isolate, result) };
-        
-        Local<Function> cb = Local<Function>::Cast(args[0]);
-        cb->Call(Null(isolate), argc, argv);
-    //});
+    TrainWork *work = new TrainWork();
+    work->request.data = work;
+    
+    GeneticNodeWrapper* obj = ObjectWrap::Unwrap<GeneticNodeWrapper>(args.Holder());
+    work->genetic = obj->genetic;
+    
+    Local<Function> callback = Local<Function>::Cast(args[0]);
+    work->callback.Reset(isolate, callback);
+ 
+    // kick of the worker thread
+    uv_queue_work(uv_default_loop(), &work->request, TrainAsync, TrainAsyncComplete);
+}
+
+void GeneticNodeWrapper::TrainAsync(uv_work_t *req) {
+    TrainWork *work = static_cast<TrainWork *>(req->data);
+    work->result = work->genetic->start();
+}
+
+void GeneticNodeWrapper::TrainAsyncComplete(uv_work_t *req, int status) {
+    Isolate * isolate = Isolate::GetCurrent();
+
+    v8::HandleScope handle_scope(isolate);
+
+    TrainWork *work = static_cast<TrainWork *>(req->data);
+
+    const unsigned argc = 1;
+    Local<Value> argv[argc] = { Number::New(isolate, work->result) };
+
+    Local<Function>::New(isolate, work->callback)->Call(Null(isolate), argc, argv);
+
+    delete work;
 }
 
 void GeneticNodeWrapper::Recognize(const FunctionCallbackInfo<Value>& args) {
@@ -153,11 +175,4 @@ void GeneticNodeWrapper::Recognize(const FunctionCallbackInfo<Value>& args) {
     long result = obj->genetic->recognize(_stream);
 
     args.GetReturnValue().Set(result);
-
-    //Isolate* isolate = args.GetIsolate();
-    //const unsigned argc = 1;
-    //Local<Value> argv[argc] = { Number::New(isolate, result) };
-
-    //Local<Function> cb = Local<Function>::Cast(args[0]);
-    //cb->Call(Null(isolate), argc, argv);
 }
