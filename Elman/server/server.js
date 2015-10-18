@@ -2,28 +2,64 @@ var addon = require('../node_addon/build/Release/addon');
 var express = require('express');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+var cookieParser = require('cookie-parser');
 
 var app = express();
 app.use(express.static('../frontend'));
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(session({
-    genid: function(req) {
-        return genuuid() // use UUIDs for session IDs
-    },
-    secret: 'keyboard cat'
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: true
 }));
 
+var genetics = [];
 
-app.get('/api/init', function (req, res) {
-    res.send('Hello World!');
+app.post('/api/init', function (req, res) {
+    console.log('init');
+    console.log(req.sessionID);
+    
+    genetics[req.sessionID] = new addon.GeneticNodeWrapper(
+        req.body.config.gConfig,
+        req.body.config.nConfig,
+        req.body.trainingSet);
+   
+    res.json({
+        status: 'ok'
+    });
 });
 
-app.get('/api/start', function (req, res) {
-    res.send('Hello World!');
+app.post('/api/start', function (req, res) {
+    console.log('start');
+    console.log(req.sessionID);
+    
+    var genetic = genetics[req.sessionID];
+    console.log(genetic);
+    
+    genetic.start((iterationsCount) => {
+        console.log("Finished after: " + iterationsCount);
+
+        res.json({
+            status: 'ok',
+            data: {
+                iterationsCount: iterationsCount
+            }
+        });
+    });
 });
 
-app.get('/api/recognize', function (req, res) {
-    res.send('Hello World!');
+app.post('/api/recognize', function (req, res) {
+    console.log('recognize');
+    var genetic = genetics[req.sessionID];
+    var result = genetic.recognize(req.body.stream);
+    
+    res.json({
+        status: 'ok',
+        data: {
+            result: result
+        }
+    });
 });
 
 
@@ -33,18 +69,3 @@ var server = app.listen(3000, function () {
 
     console.log('Example app listening at http://%s:%s', host, port);
 });
-
-
-//var trainSet = [sample1, sample2];
-
-//var obj = new addon.GeneticNodeWrapper(gConfig, nConfig, trainSet);
-//console.log(obj);
-
-//obj.start((iterationsCount) => {
-//    console.log("Finished after: " + iterationsCount);
-
-//    console.log(obj.recognize(sample1[0]));
-//    console.log(obj.recognize(sample2[0]));
-//});
-
-//setTimeout(() => console.log('Timed out'), 5000);

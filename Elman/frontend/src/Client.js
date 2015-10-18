@@ -1,4 +1,4 @@
-import jquery from 'jquery';
+import $ from 'jquery';
 import _ from 'lodash';
 import RequestError from './RequestError';
 
@@ -22,7 +22,7 @@ export default class Client {
 
     static start(cb) {
         cb = cb || _.noop();
-        Client._post('/api/start', null, {
+        Client._post('/api/start', {}, {
             onError: (res) => cb(new RequestError(res)),
             onComplete: (res) => {
                 if (res.status == "ok") {

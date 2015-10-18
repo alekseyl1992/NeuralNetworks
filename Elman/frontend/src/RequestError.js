@@ -1,11 +1,11 @@
 
-export default class RequestError {
-    Type = {
-        None: 'none',
-        ApiError: 'apiError',
-        ServerError: 'serverError'
-    };
+var Type = {
+    None: 'none',
+    ApiError: 'apiError',
+    ServerError: 'serverError'
+};
 
+export default class RequestError {
     initialize(resp, apiError) {
         this.errorType = 0;
         this.data = null;
@@ -14,14 +14,14 @@ export default class RequestError {
         if (!apiError) {
             this.httpStatus = resp.status;
             if (resp.responseJSON != null) {
-                this.errorType = this.Type.ApiError;
+                this.errorType = Type.ApiError;
                 this.data = resp.responseJSON;
             } else {
-                this.errorType = this.Type.ServerError;
+                this.errorType = Type.ServerError;
                 this.data = resp.responseText;
             }
         } else {
-            this.errorType = this.Type.ApiError;
+            this.errorType = Type.ApiError;
             this.data = resp;
         }
 
@@ -29,11 +29,11 @@ export default class RequestError {
     }
 
     isServerError() {
-        return this.errorType == this.Type.ServerError;
+        return this.errorType == Type.ServerError;
     }
 
     isApiError() {
-        return this.errorType == this.Type.ApiError;
+        return this.errorType == Type.ApiError;
     }
 
     getData() {
