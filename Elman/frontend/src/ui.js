@@ -10,7 +10,7 @@ import handlebars from 'handlebars';
 
 import Perceptron from './perceptron';
 import apiTest from './apiTest';
-
+import Client from './Client';
 
 export default class UI {
     constructor() {

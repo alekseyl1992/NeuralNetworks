@@ -73,6 +73,23 @@
                     "./dist/experiment.js": ["./src/experiment.js"]
                 }
             },
+            apiTest: {
+                options: {
+                    transform: [
+                        ["babelify", {
+                            loose: "all"
+                        }]
+                    ],
+                    browserifyOptions: {
+                        debug: true
+                    },
+                    debug: true,
+                    external: vendorLibs
+                },
+                files: {
+                    "./dist/apiTest.js": ["./src/apiTest.js"]
+                }
+            },
             vendor: {
                 // External modules that don't need to be constantly re-compiled
                 src: ['.'],
@@ -126,6 +143,7 @@
         "concat_css:app",
         "browserify:app",
         "browserify:experiment",
+        "browserify:apiTest",
         "connect",
         "watch"]);
 
