@@ -9,18 +9,21 @@ import alertify from 'alertifyjs';
 import handlebars from 'handlebars';
 
 import Perceptron from './perceptron';
+import apiTest from './apiTest';
+
 
 export default class UI {
     constructor() {
         this.templates = {
             inputImage: handlebars.compile($('#input-image-template').html()),
-            trainingSetImage: handlebars.compile($('#training-set-image-template').html()),
+            trainingSetLane: handlebars.compile($('#training-set-image-template').html()),
             config: handlebars.compile($('#config-template').html())
         };
 
         this.$config = $('#config');
-        this.$log = $('#log');
-        this.$inputImage = $('#input-image');
+        this.$inputLane = $('.input-lane');
+        this.$inputLaneAddImage = $('.input-lane-add-image');
+
         this.$trainingSet = $('#training-set');
         this.$displayValue = $('.display__value');
 
@@ -28,13 +31,17 @@ export default class UI {
         $('#train').click(this.train.bind(this));
         $('#reset').click(this.reset.bind(this));
 
+        this.$inputLaneAddImage.click(() => {
+            this.addInputImage();
+        });
+
         $('.add-image').click((e) => {
             var label = $(e.target).data('value');
-            this.addImage(label);
+            this.addLane(label);
         });
-        $('.clear').click(this.renderInputImage.bind(this));
+        $('.clear').click(this.clearInputLane.bind(this));
         $('#recognize').click(this.recognize.bind(this));
-        $('#run-tests').click(this.runTests.bind(this));
+        $('#run-tests').click(apiTest);
 
 
         $('.nav-tabs a').click(function (e) {
@@ -43,88 +50,46 @@ export default class UI {
         });
 
         this.config = {
-            imageSize: 3,
-            speed: 0.1,
-            threshold: 0.5
+            gConfig: {
+                populationSize: 2,
+                targetFitness: 0.1,
+                segmentDivider: 10,
+                mutationProb: 0.1
+            },
+            nConfig: {
+                inputsCount: 9,
+                hiddenCount: 9
+            }
         };
 
         this.renderConfig(this.config);
-        this.renderInputImage();
+        this.addInputImage();
     }
 
-    runTests() {
-        var p = new Perceptron(9, 0.5);
-        var trainSet = {
-            0: [[
-                1, 0, 0,
-                0, 1, 0,
-                0, 0, 1
-            ]],
-            1: [[
-                0, 0, 1,
-                0, 1, 0,
-                1, 0, 0
-            ]]
-        };
-
-        console.log('Test started');
-        var result = p.train(trainSet, 0.1);
-        console.log('Steps: ' + result.stepsCount);
-        console.assert(p.activate(trainSet[0][0]).value == 0);
-        console.assert(p.activate(trainSet[1][0]).value == 1);
-        console.log('Test finished');
-    }
-
-    plot(history) {
-        this.$log.empty();
-
-        _.each(history, (neuronHistory, id) => {
-            var data = [{
-                label: 'w' + id + ' vs step',
-                data: neuronHistory
-            }];
-
-            var $plot = $('<div />');
-            $plot.addClass('plot');
-            $plot.appendTo(this.$log);
-
-            $.plot($plot, data, {
-                series: {
-                    lines: { show: true },
-                    points: { show: true }
-                },
-                grid: {
-                    hoverable: true,
-                    clickable: true
-                },
-                xaxis: {
-                    label: 'step'
-                },
-                yaxis: {
-                    label: 'w'
-                }
-            });
-        });
-    }
-
-    renderInputImage() {
+    addInputImage() {
         var image = [];
+        var imageSize = Math.sqrt(this.config.nConfig.inputsCount);
 
-        for (let i = 0; i < this.config.imageSize; ++i) {
+        for (let i = 0; i < imageSize; ++i) {
             let row = [];
-            for (let j = 0; j < this.config.imageSize; ++j) {
+            for (let j = 0; j < imageSize; ++j) {
                 row.push(0);
             }
             image.push(row);
         }
 
         var html = this.templates.inputImage(image);
-        this.$inputImage.html(html);
+        var $image = $(html);
+        $image.appendTo(this.$inputLane);
 
-        this.$inputImage.find('.cell').each((id, cell) => {
+        this.$inputLane.find('.cell').each((id, cell) => {
             var $cell = $(cell);
             $cell.click(this.flipCell.bind(this, $cell));
         });
+    }
+
+    clearInputLane() {
+        this.$inputLane.empty();
     }
 
     flipCell($cell) {
@@ -135,31 +100,35 @@ export default class UI {
         $cell.addClass('cell' + value);
     }
 
-    getInputImage($image) {
-        var cells = $image.find('.cell');
+    getInputLane($el) {
+        var cells = $el.find('.cell');
         return _.map(cells, (cell) => $(cell).data('value'));
     }
 
-    addImage(label) {
-        var image = {
+    addLane(label) {
+        var imageSize = Math.sqrt(this.config.nConfig.inputsCount);
+
+        var lane = {
             label: label,
-            image: _.chunk(this.getInputImage(this.$inputImage), this.config.imageSize)
+            image: _.chunk(this.getInputLane(this.$inputLane), imageSize)
         };
 
-        var $image = $(this.templates.trainingSetImage(image));
-        $image.appendTo(this.$trainingSet);
+        var $lane = $(this.templates.trainingSetLane(lane));
 
-        $image.find('.remove').click(() => $image.remove());
+
+        $lane.appendTo(this.$trainingSet);
+
+        $lane.find('.remove').click(() => $image.remove());
 
         // clear input
-        this.renderInputImage();
+        this.clearInputLane();
     }
 
     apply() {
         this.config = this.getConfig();
 
         this.$trainingSet.empty();
-        this.renderInputImage(this.$inputImage);
+        this.clearInputLane();
     }
 
     train() {
@@ -210,7 +179,10 @@ export default class UI {
     }
 
     getConfig() {
-        var config = {};
+        var config = {
+            gConfig: {},
+            nConfig: {}
+        };
 
         this.$config.find('input').each((id, input) => {
             var $input = $(input);
@@ -218,7 +190,9 @@ export default class UI {
             if (_.isNaN(val))
                 val = $input.val();
 
-            config[$input.data('key')] = val;
+            var subConfig = $input.data('config');
+            var key = $input.data('key');
+            config[subConfig][key] = val;
         });
 
         return config;

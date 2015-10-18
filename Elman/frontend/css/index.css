@@ -72,3 +72,25 @@
     left: 8px;
     bottom: 8px;
 }
+
+.input-lane {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    overflow-x: auto;
+
+    height: 150px;
+    width: 90%;
+}
+
+.input-lane__image {
+    flex-basis: 150px;
+}
+
+.input-lane-add-image {
+    width: 10%;
+    top: 50%;
+    display: inline;
+}

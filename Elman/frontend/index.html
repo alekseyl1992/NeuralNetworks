@@ -13,24 +13,24 @@
     <div class="row">
         <div class="col-md-8">
             <div class="row">
-                <div id="input-image" class="col-lg-4">
+                <div class="input-lane input-lane__editable">
                     <script id="input-image-template" type="text/handlebars">
-                    <table class="image-table">
-                        {{#each this}}
-                            <tr>
-                            {{#each this}}
-                            <td class="cell cell{{this}}" data-value="{{this}}">
-                            </td>
-                            {{/each}}
-                            </tr>
-                        {{/each}}
-                    </table>
+                        <div class="input-lane__image">
+                            <table class="input-lane__image__table">
+                                {{#each this}}
+                                    <tr>
+                                    {{#each this}}
+                                    <td class="cell cell{{this}}" data-value="{{this}}">
+                                    </td>
+                                    {{/each}}
+                                    </tr>
+                                {{/each}}
+                            </table>
+                        </div>
                     </script>
                 </div>
-                <div class="display col-md-8">
-                    This is: <span class="display__value">--</span>
-                    <br>
-                    <button class="btn btn-primary" id="recognize">Recognize</button>
+                <div class="input-lane-add-image">
+                    <button class="btn btn-default">+</button>
                 </div>
             </div>
 
@@ -49,16 +49,8 @@
                             [x]
                         </div>
                     </div>
-                    <table class="image-table">
-                        {{#each image}}
-                            <tr>
-                            {{#each this}}
-                            <td class="cell cell{{this}}" data-value="{{this}}">
-                            </td>
-                            {{/each}}
-                            </tr>
-                        {{/each}}
-                    </table>
+                    <div class="lane-wrapper">
+                    </div>
                 </div>
                 </script>
             </div>
@@ -78,9 +70,16 @@
                         <table class="table">
                             {{#each config}}
                                 <tr>
-                                <td>{{@key}}:</td>
-                                <td><input type="text" value="{{this}}" data-key="{{@key}}"></td>
+                                    <td span="2">
+                                    <b>{{@key}}</b>
+                                    </td>
                                 </tr>
+                                {{#each .}}
+                                    <tr>
+                                    <td>{{@key}}:</td>
+                                    <td><input type="text" value="{{this}}" data-config="{{@../key}}" data-key="{{@key}}"></td>
+                                    </tr>
+                                {{/each}}
                             {{/each}}
                         </table>
                         </script>
