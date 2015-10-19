@@ -97,6 +97,10 @@
 
 .input-lane-add-image {
     width: 10%;
-    top: 50%;
     display: inline;
+}
+
+.input-lane-add-image__btn {
+    position: relative;
+    top: 50%;
 }
