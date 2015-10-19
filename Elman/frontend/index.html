@@ -35,13 +35,13 @@
             </div>
 
             <div>
-                <button class="add-image btn" data-value="0">0</button>
+                <button class="add-image btn" data-value="-1">-1</button>
                 <button class="add-image btn" data-value="1">1</button>
                 <button class="clear btn" data-value="clear">Clear</button>
             </div>
             <hr>
             <div id="training-set">
-                <script id="training-set-image-template" type="text/handlebars">
+                <script id="training-set-lane-template" type="text/handlebars">
                 <div class="sample" data-label="{{label}}">
                     <div>
                         {{label}}
@@ -91,8 +91,9 @@
             </div>
             <div>
                 <button class="btn btn-success" id="train">Train</button>
+                <button class="btn btn-primary" id="recognize">Recognize</button>
                 <button class="btn" id="apply">Apply size</button>
-                <button class="btn" id="reset">Reset weights</button>
+
                 <span class="pull-right">
                     <button class="btn btn-default" id="run-tests">Tests</button>
                 </span>

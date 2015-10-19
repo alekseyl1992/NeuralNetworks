@@ -16,20 +16,17 @@ export default class UI {
     constructor() {
         this.templates = {
             inputImage: handlebars.compile($('#input-image-template').html()),
-            trainingSetLane: handlebars.compile($('#training-set-image-template').html()),
+            trainingSetLane: handlebars.compile($('#training-set-lane-template').html()),
             config: handlebars.compile($('#config-template').html())
         };
 
         this.$config = $('#config');
         this.$inputLane = $('.input-lane');
         this.$inputLaneAddImage = $('.input-lane-add-image');
-
         this.$trainingSet = $('#training-set');
-        this.$displayValue = $('.display__value');
 
         $('#apply').click(this.apply.bind(this));
         $('#train').click(this.train.bind(this));
-        $('#reset').click(this.reset.bind(this));
 
         this.$inputLaneAddImage.click(() => {
             this.addInputImage();
@@ -73,7 +70,7 @@ export default class UI {
         for (let i = 0; i < imageSize; ++i) {
             let row = [];
             for (let j = 0; j < imageSize; ++j) {
-                row.push(0);
+                row.push(-1);
             }
             image.push(row);
         }
@@ -84,41 +81,54 @@ export default class UI {
 
         this.$inputLane.find('.cell').each((id, cell) => {
             var $cell = $(cell);
+            $cell.off('click');
             $cell.click(this.flipCell.bind(this, $cell));
         });
     }
 
     clearInputLane() {
         this.$inputLane.empty();
+        this.addInputImage();
     }
 
     flipCell($cell) {
         var value = $cell.data('value');
         $cell.removeClass('cell' + value);
-        value = +!value;
+        value = -value;
         $cell.data('value', value);
+
+        //for .clone() to work
+        $cell.attr('data-value', value);
         $cell.addClass('cell' + value);
     }
 
-    getInputLane($el) {
-        var cells = $el.find('.cell');
-        return _.map(cells, (cell) => $(cell).data('value'));
+    getInputLaneData($el) {
+        var images = [];
+
+        var $images = $el.find('.input-lane__image');
+        $images.each((i, image) => {
+            var $image = $(image);
+            var $cells = $image.find('.cell');
+
+            var data = _.map($cells, (cell) => $(cell).data('value'));
+            images.push(data);
+        });
+
+        return images;
     }
 
     addLane(label) {
-        var imageSize = Math.sqrt(this.config.nConfig.inputsCount);
+        var $sample = this.$inputLane.clone();
 
-        var lane = {
-            label: label,
-            image: _.chunk(this.getInputLane(this.$inputLane), imageSize)
-        };
+        var $lane = $(this.templates.trainingSetLane({
+            label: label
+        }));
 
-        var $lane = $(this.templates.trainingSetLane(lane));
-
+        $sample.appendTo($lane.find('.lane-wrapper'));
 
         $lane.appendTo(this.$trainingSet);
 
-        $lane.find('.remove').click(() => $image.remove());
+        $lane.find('.remove').click(() => $lane.remove());
 
         // clear input
         this.clearInputLane();
@@ -133,41 +143,48 @@ export default class UI {
 
     train() {
         // collect training set
-        var trainingSet = {
-            0: [],
-            1: []
-        };
+        var trainingSet = [];
 
         this.$trainingSet.find('.sample').each((id, sample) => {
             var $sample = $(sample);
             var label = $sample.data('label');
-            var image = this.getInputImage($sample.find('.image-table'));
+            var data = this.getInputLaneData($sample.find('.input-lane'));
 
-            trainingSet[label].push(image);
+            trainingSet.push([data, label]);
         });
 
         // get config
         this.config = this.getConfig();
 
         // train
-        this.perceptron = new Perceptron(
-            this.config.imageSize * this.config.imageSize,
-            this.config.threshold);
+        Client.init(this.config, trainingSet, (err, data) => {
+            if (err) {
+                alertify.error('Init error');
+                return;
+            }
 
-        var result = this.perceptron.train(trainingSet, this.config.speed);
+            alertify.success('Initialized');
+            Client.start((err, data) => {
+                if (err) {
+                    alertify.error('Train error');
+                    return;
+                }
 
-        alertify.success('Training finished after ' + result.stepsCount + ' steps');
-        this.plot(result.history);
-    }
-
-    reset() {
-        this.perceptron.reset();
+                alertify.success('Trained with ' + data.iterationsCount + ' iterations');
+            });
+        });
     }
 
     recognize() {
-        var image = this.getInputImage(this.$inputImage);
-        var value = this.perceptron.activate(image);
-        this.$displayValue.text(value.value + ' (' + value.raw.toFixed(2) + ')');
+        var lane = this.getInputLaneData(this.$inputLane);
+        Client.recognize(lane, (err, data) => {
+            if (err) {
+                alertify.error('Recognize error');
+                return;
+            }
+
+            alertify.success('Recognized: ' + data.result);
+        });
     }
 
     renderConfig(config) {

@@ -33,7 +33,7 @@
     border: 1px solid black;
 }
 
-.cell0 {
+.cell-1 {
     background-color: white;
 }
 
@@ -48,6 +48,7 @@
 
     overflow-y: scroll;
     height: 50%;
+    width: 100%;
 }
 
 .sample {
@@ -55,8 +56,9 @@
 
     border: groove thick;
     border-radius: 5px;
-    margin: 10px;
     padding: 10px;
+
+    width: 100%;
 }
 
 .display {
@@ -83,6 +85,10 @@
 
     height: 150px;
     width: 90%;
+}
+
+.input-lane__editable {
+    margin: 20px;
 }
 
 .input-lane__image {
