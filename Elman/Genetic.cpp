@@ -45,7 +45,7 @@ Net *Genetic::crossover(Net *a, Net *b) {
     Net *source = sources[rand() % 2];
 
     for (int i = 0; i < result->edges.size(); ++i) {
-        int segmentSize = rand() % result->edges.size() / 10;
+        int segmentSize = rand() % result->edges.size() / gConfig.segmentDivider;
 
         for (int j = 0; j < segmentSize; ++j) {
             if (i + j >= result->edges.size())
@@ -80,7 +80,7 @@ long Genetic::start() {
     // train
     long iterationCount = 0;
     while (true) {
-        std::cout << iterationCount << ") ";
+        //std::cout << iterationCount << ") ";
         for (Chromosome &ch : population) {
             calcFitness(ch, trainSet);
         }
@@ -89,7 +89,7 @@ long Genetic::start() {
             return ch1.fitness < ch2.fitness;
         });
 
-        std::cout << population[0].fitness << std::endl;
+        //std::cout << population[0].fitness << std::endl;
         if (population[0].fitness <= gConfig.targetFitness)
             break;
 
